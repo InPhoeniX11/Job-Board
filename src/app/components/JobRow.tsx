@@ -2,7 +2,8 @@
 import TimeAgo from "@/app/components/TimeAgo";
 import { Job } from "@/models/Job";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart as solidHeart } from "@fortawesome/free-solid-svg-icons";
+import { faHeart as regularHeart } from "@fortawesome/free-regular-svg-icons";
 import axios from "axios";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -10,19 +11,17 @@ import { useState, useEffect } from "react";
 export default function JobRow({ jobDoc }: { jobDoc: Job }) {
   const [orgName, setOrgName] = useState<string | null>(null);
   const [loadingOrgName, setLoadingOrgName] = useState<boolean>(true);
+  const [isLiked, setIsLiked] = useState<boolean>(false); // Track "like" state
 
   useEffect(() => {
-    // If orgName is already available from the jobDoc, use it
     if (jobDoc.orgName) {
       setOrgName(jobDoc.orgName);
       setLoadingOrgName(false);
     } else {
-      // Simulate async fetching logic for orgName (replace with actual fetch)
       setTimeout(async () => {
         try {
-          // Replace with your actual API call to fetch organization name based on orgId
           const response = await axios.get(`/api/org/${jobDoc.orgId}`);
-          const fetchedOrgName = response.data.name;  // Assuming the response has a `name` field
+          const fetchedOrgName = response.data.name;
           setOrgName(fetchedOrgName);
         } catch (error) {
           console.error("Error fetching organization name", error);
@@ -30,14 +29,28 @@ export default function JobRow({ jobDoc }: { jobDoc: Job }) {
         } finally {
           setLoadingOrgName(false);
         }
-      }, 500); // Simulate delay in fetching
+      }, 500);
     }
   }, [jobDoc]);
 
+  // Handle "like" button click
+  const handleLike = async () => {
+    setIsLiked(!isLiked); // Toggle the like state
+    try {
+      // Optionally send a request to the server to record the like
+      await axios.post('/api/like', { jobId: jobDoc._id, liked: !isLiked });
+    } catch (error) {
+      console.error("Error updating like status:", error);
+    }
+  };
+
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm relative">
-      <div className="absolute cursor-pointer top-4 right-4">
-        <FontAwesomeIcon className="w-4 h-4 text-gray-300" icon={faHeart} />
+      <div className="absolute cursor-pointer top-4 right-4" onClick={handleLike}>
+        <FontAwesomeIcon
+          className={`w-4 h-4 ${isLiked ? 'text-red-500' : 'text-gray-300'}`} // Change color when liked
+          icon={isLiked ? solidHeart : regularHeart} // Solid heart for "liked", regular for "not liked"
+        />
       </div>
       <div className="flex grow gap-4">
         <div className="content-center w-12 basis-12 shrink-0">
@@ -47,7 +60,7 @@ export default function JobRow({ jobDoc }: { jobDoc: Job }) {
           <div className="grow">
             <div>
               <Link href={`/jobs/${jobDoc.orgId}`} className="hover:underline text-gray-500 text-sm">
-                {loadingOrgName ? "Loading..." : orgName}  {/* Show loading or org name */}
+                {loadingOrgName ? "Loading..." : orgName}
               </Link>
             </div>
             <div className="font-bold text-lg mb-1">
