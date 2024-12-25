@@ -5,7 +5,7 @@ export type Job = {
   _id: string;
   title: string;
   description: string;
-  orgName?: string;
+  orgName: string;
   remote: string;
   type: string;
   salary: number;
@@ -27,6 +27,7 @@ export type Job = {
 };
 
 const JobSchema = new Schema({
+  orgName:{type: String, required: true},
   title: {type: String, required: true},
   description: {type: String, required: true},
   remote: {type: String, required: true},

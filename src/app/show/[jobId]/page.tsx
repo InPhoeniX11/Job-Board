@@ -14,7 +14,8 @@ export default async function SingleJobPage(props:PageProps) {
   const jobDoc = await JobModel.findById(jobId);
   return (
     <div className="container mt-8 my-6">
-      <div className="sm:flex">
+        <div className="capitalize text-sm text-black-800 mb-4">{jobDoc.orgName}</div>
+        <div className="sm:flex">
         <div className="grow">
           <h1 className="text-4xl mb-2">{jobDoc.title}</h1>
           <div className="capitalize text-sm text-blue-800 mb-4">
